@@ -1,44 +1,48 @@
 import { BasePage } from './BasePage';
-import { expect } from '@playwright/test';
+import { expect, Page } from '@playwright/test';
+import { CartPageLocators } from './CartPageLocators';
 
 export class CartPage extends BasePage {
   url = '/cart.html';
 
+  private readonly locators: CartPageLocators;
+
+  constructor(page: Page) {
+    super(page);
+    this.locators = new CartPageLocators(page);
+  }
+
   async expectItemExistsInCart(title: string): Promise<void> {
     await expect(
-      await this.page
-        .getByTestId('inventory-item-name')
-        .filter({ hasText: title }),
+      this.locators.cartItemNames.filter({ hasText: title }),
     ).toBeVisible();
   }
 
   async expectItemNotInCart(title: string): Promise<void> {
     await expect(
-      this.page.getByTestId('inventory-item-name').filter({ hasText: title }),
+      this.locators.cartItemNames.filter({ hasText: title }),
     ).toHaveCount(0);
   }
 
   async removeFromCartByTitle(title: string) {
-    await this.page
-      .getByTestId('inventory-item')
+    await this.locators.cartItems
       .filter({ hasText: title })
-      .getByRole('button', { name: 'Remove' })
+      .getByTestId(/^remove-/)
       .click();
   }
 
   async getPriceByTitle(title: string): Promise<string> {
-    return await this.page
-      .getByTestId('inventory-item')
+    return await this.locators.cartItems
       .filter({ hasText: title })
       .getByTestId('inventory-item-price')
       .innerText();
   }
 
   async checkout() {
-    await this.page.getByRole('button', { name: 'Checkout' }).click();
+    await this.locators.checkoutButton.click();
   }
 
   async continueShopping() {
-    await this.page.getByRole('button', { name: 'Continue Shopping' }).click();
+    await this.locators.continueShoppingButton.click();
   }
 }
