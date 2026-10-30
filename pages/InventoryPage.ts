@@ -1,38 +1,43 @@
-import { expect } from '@playwright/test';
+import { expect, Page } from '@playwright/test';
 import { BasePage } from './BasePage';
+import { InventoryPageLocators } from './InventoryPageLocators';
 
 export class InventoryPage extends BasePage {
   url = '/inventory.html';
+
+  private readonly locators: InventoryPageLocators;
+
+  constructor(page: Page) {
+    super(page);
+    this.locators = new InventoryPageLocators(page);
+  }
 
   async expectInventoryPageOpened(): Promise<void> {
     await expect(this.page).toHaveURL(/inventory\.html/);
   }
 
   async addToCartByTitle(title: string) {
-    await this.page
-      .getByTestId('inventory-item')
+    await this.locators.inventoryItems
       .filter({ hasText: title })
-      .getByRole('button', { name: 'Add to cart' })
+      .getByTestId(/^add-to-cart-/)
       .click();
   }
 
   async removeFromCartByTitle(title: string) {
-    await this.page
-      .getByTestId('inventory-item')
+    await this.locators.inventoryItems
       .filter({ hasText: title })
-      .getByRole('button', { name: 'Remove' })
+      .getByTestId(/^remove-/)
       .click();
   }
 
   async getPriceByTitle(title: string): Promise<string> {
-    return await this.page
-      .getByTestId('inventory-item')
+    return await this.locators.inventoryItems
       .filter({ hasText: title })
       .getByTestId('inventory-item-price')
       .innerText();
   }
 
   async openCart() {
-    await this.page.getByTestId('shopping-cart-link').click();
+    await this.locators.cartLink.click();
   }
 }
