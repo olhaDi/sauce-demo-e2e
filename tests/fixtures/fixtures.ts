@@ -15,10 +15,12 @@ type MyFixtures = {
   login: void;
   logout: void;
   user: User;
+  autoLogin: boolean;
 };
 
 export const test = base.extend<MyFixtures>({
   user: [USERS.standard, { option: true }],
+  autoLogin: [true, { option: true }],
   loginPage: async ({ page }, use) => {
     await use(new LoginPage(page));
   },
@@ -33,8 +35,10 @@ export const test = base.extend<MyFixtures>({
   },
 
   login: [
-    async ({ loginPage, user }, use) => {
-      await loginPage.loginUser(user.username, user.password);
+    async ({ loginPage, user, autoLogin }, use) => {
+      if (autoLogin) {
+        await loginPage.loginUser(user.username, user.password);
+      }
       await use();
     },
     { auto: true },
